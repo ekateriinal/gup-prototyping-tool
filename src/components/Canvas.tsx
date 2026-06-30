@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import type { Field, FieldKind, Step } from '../types';
 import { FieldRenderer } from './FieldRenderer';
 import { EditableText } from './EditableText';
@@ -179,11 +179,32 @@ const DropZone: React.FC<{
   onRemoveField: (id: string) => void;
 }> = ({ fields, selectedFieldId, onDropField, onSelectField, onRemoveField }) => {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [isDragInside, setIsDragInside] = useState(false);
+  const dragDepth = useRef(0);
+
+  const isOurDrag = (e: React.DragEvent) =>
+    e.dataTransfer.types.includes('application/x-gup-field');
+
+  const handleZoneEnter = (e: React.DragEvent) => {
+    if (!isOurDrag(e)) return;
+    dragDepth.current++;
+    setIsDragInside(true);
+  };
+  const handleZoneLeave = (e: React.DragEvent) => {
+    if (!isOurDrag(e)) return;
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) {
+      setIsDragInside(false);
+      setHoverIndex(null);
+    }
+  };
 
   const handleDrop = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.stopPropagation();
     const raw = e.dataTransfer.getData('application/x-gup-field');
+    dragDepth.current = 0;
+    setIsDragInside(false);
     setHoverIndex(null);
     if (!raw) return;
     try {
@@ -195,19 +216,32 @@ const DropZone: React.FC<{
   };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
-    if (e.dataTransfer.types.includes('application/x-gup-field')) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
-      setHoverIndex(index);
-    }
+    if (!isOurDrag(e)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    setHoverIndex(index);
+  };
+
+  const handleFieldDragOver = (e: React.DragEvent, fieldIndex: number) => {
+    if (!isOurDrag(e)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    const rect = e.currentTarget.getBoundingClientRect();
+    const above = e.clientY < rect.top + rect.height / 2;
+    setHoverIndex(above ? fieldIndex : fieldIndex + 1);
+  };
+
+  const handleFieldDrop = (e: React.DragEvent, fieldIndex: number) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const above = e.clientY < rect.top + rect.height / 2;
+    handleDrop(e, above ? fieldIndex : fieldIndex + 1);
   };
 
   return (
     <div
-      className="drop-zone"
-      onDragLeave={(e) => {
-        if (e.currentTarget === e.target) setHoverIndex(null);
-      }}
+      className={`drop-zone${isDragInside ? ' drop-zone--dragging' : ''}`}
+      onDragEnter={handleZoneEnter}
+      onDragLeave={handleZoneLeave}
     >
       {fields.length === 0 && (
         <div
@@ -225,12 +259,18 @@ const DropZone: React.FC<{
             onDragOver={(e) => handleDragOver(e, i)}
             onDrop={(e) => handleDrop(e, i)}
           />
-          <FieldRenderer
-            field={field}
-            selected={selectedFieldId === field.id}
-            onSelect={() => onSelectField(field.id)}
-            onRemove={() => onRemoveField(field.id)}
-          />
+          <div
+            className="field-drop-target"
+            onDragOver={(e) => handleFieldDragOver(e, i)}
+            onDrop={(e) => handleFieldDrop(e, i)}
+          >
+            <FieldRenderer
+              field={field}
+              selected={selectedFieldId === field.id}
+              onSelect={() => onSelectField(field.id)}
+              onRemove={() => onRemoveField(field.id)}
+            />
+          </div>
         </React.Fragment>
       ))}
       {fields.length > 0 && (
