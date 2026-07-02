@@ -37,7 +37,6 @@ function attrs(o: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(o)) {
     if (v === undefined || v === null || v === false || v === '') continue;
-    // Booleans become bare attributes (e.g. <gup-checkbox required>)
     out[k] = v === true ? '' : v;
   }
   return out;
@@ -62,11 +61,9 @@ const FieldBody: React.FC<{ field: Field }> = ({ field }) => {
         'error-message': field.errorMessage,
       });
       return (
-        // @ts-expect-error custom element
         <gup-input-field {...a}>
           {field.label}
           {field.hint && <span slot="hint">{field.hint}</span>}
-        {/* @ts-expect-error custom element */}
         </gup-input-field>
       );
     }
@@ -81,11 +78,9 @@ const FieldBody: React.FC<{ field: Field }> = ({ field }) => {
         'error-message': field.errorMessage,
       });
       return (
-        // @ts-expect-error custom element
         <gup-textarea-field {...a}>
           {field.label}
           {field.hint && <span slot="hint">{field.hint}</span>}
-        {/* @ts-expect-error custom element */}
         </gup-textarea-field>
       );
     }
@@ -100,11 +95,9 @@ const FieldBody: React.FC<{ field: Field }> = ({ field }) => {
         'error-message': field.errorMessage,
       });
       return (
-        // @ts-expect-error custom element
         <gup-checkbox {...a}>
           {field.label}
           {field.hint && <span slot="hint">{field.hint}</span>}
-        {/* @ts-expect-error custom element */}
         </gup-checkbox>
       );
     }
@@ -116,11 +109,9 @@ const FieldBody: React.FC<{ field: Field }> = ({ field }) => {
         'knob-location': field.knobLocation,
       });
       return (
-        // @ts-expect-error custom element
         <gup-toggle {...a}>
           {field.label}
           {field.hint && <span slot="hint">{field.hint}</span>}
-        {/* @ts-expect-error custom element */}
         </gup-toggle>
       );
     }
@@ -132,18 +123,14 @@ const FieldBody: React.FC<{ field: Field }> = ({ field }) => {
         'error-message': field.errorMessage,
       });
       return (
-        // @ts-expect-error custom element
         <gup-radio-button-group {...a}>
           <span slot="label">{field.label}</span>
           {field.hint && <span slot="hint">{field.hint}</span>}
           {(field.options ?? []).map((opt, i) => (
-            // @ts-expect-error custom element
             <gup-radio-button key={i} value={`opt-${i}`}>
               {opt}
-            {/* @ts-expect-error custom element */}
             </gup-radio-button>
           ))}
-        {/* @ts-expect-error custom element */}
         </gup-radio-button-group>
       );
     }
@@ -158,22 +145,16 @@ const FieldBody: React.FC<{ field: Field }> = ({ field }) => {
         'error-message': field.errorMessage,
       });
       return (
-        // @ts-expect-error custom element
         <gup-dropdown-field {...a}>
           <span slot="label-slot">{field.label}</span>
           {field.hint && <span slot="hint">{field.hint}</span>}
-          {/* @ts-expect-error custom element */}
           <gup-dropdown-menu>
             {(field.options ?? []).map((opt, i) => (
-              // @ts-expect-error custom element
               <gup-dropdown-menu-item key={i} value={`opt-${i}`}>
                 {opt}
-              {/* @ts-expect-error custom element */}
               </gup-dropdown-menu-item>
             ))}
-          {/* @ts-expect-error custom element */}
           </gup-dropdown-menu>
-        {/* @ts-expect-error custom element */}
         </gup-dropdown-field>
       );
     }
@@ -189,28 +170,22 @@ const FieldBody: React.FC<{ field: Field }> = ({ field }) => {
         'error-message': field.errorMessage,
       });
       return (
-        // @ts-expect-error custom element
         <gup-file-upload {...a}>
           {field.label}
           {field.hint && <span slot="hint">{field.hint}</span>}
-        {/* @ts-expect-error custom element */}
         </gup-file-upload>
       );
     }
     case 'form-section':
       return <h3 className="canvas-section-title">{field.label}</h3>;
     case 'form-hint':
-      // @ts-expect-error custom element
       return <gup-form-hint>{field.label}</gup-form-hint>;
     case 'validation-message':
-      // @ts-expect-error custom element
       return <gup-form-validation-message>{field.label}</gup-form-validation-message>;
     case 'button':
       return (
-        // @ts-expect-error custom element
         <gup-button appearance={field.appearance ?? 'primary'} disabled={field.disabled ? '' : undefined}>
           {field.label}
-        {/* @ts-expect-error custom element */}
         </gup-button>
       );
   }

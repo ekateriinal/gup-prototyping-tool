@@ -27,6 +27,5 @@ export const GupButton: React.FC<Props> = ({ appearance, slot, className, onClic
   if (appearance) props.appearance = appearance;
   if (disabled) props.disabled = '';
 
-  // @ts-expect-error custom element
   return <gup-button {...props}>{children}</gup-button>;
 };

@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Served from https://ekateriinal.github.io/gup-prototyping-tool/ — Vite uses
-// `base` to prefix every emitted asset URL. Stays '/' for local dev.
+// Served from https://ekateriinal.github.io/gup-prototyping-tool/
 export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/gup-prototyping-tool/' : '/',
   plugins: [react()],

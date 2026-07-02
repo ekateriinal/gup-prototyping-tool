@@ -11,13 +11,19 @@ import type { Field, FieldKind, Prototype, Step } from './types';
 const newStepId = () => `s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
 const DEFAULT_DESCRIPTION = 'Placeholder for step description.';
+const REVIEW_DEFAULT_TITLE = 'Review your application';
+const REVIEW_DEFAULT_DESCRIPTION =
+  'Kindly thoroughly review your application prior to proceeding further.';
+  const REVIEW_DEFAULT_INSTRUCTIONS_HEADING = 'Now send your application';
+const REVIEW_DEFAULT_INSTRUCTIONS =
+  'By submitting this application you are confirming that, to the best of your knowledge, the details you are providing are correct.';
 
 const initialState: Prototype = {
   serviceTitle: 'Form section title',
   contentHeader: 'Service name',
   steps: [
-    { id: newStepId(), title: 'Step 1', description: DEFAULT_DESCRIPTION, fields: [] },
-    { id: newStepId(), title: 'Step 2', description: DEFAULT_DESCRIPTION, fields: [] },
+    { id: newStepId(), title: 'Step 1', description: DEFAULT_DESCRIPTION, kind: 'form', fields: [] },
+    { id: newStepId(), title: 'Step 2', description: DEFAULT_DESCRIPTION, kind: 'form', fields: [] },
   ],
 };
 
@@ -74,6 +80,24 @@ const App: React.FC = () => {
     [updateState, selectField],
   );
 
+  const handleReorderField = useCallback(
+    (stepId: string, fieldId: string, targetIndex: number) => {
+      updateState((p) => ({
+        ...p,
+        steps: p.steps.map((s) => {
+          if (s.id !== stepId) return s;
+          const currentIdx = s.fields.findIndex((f) => f.id === fieldId);
+          if (currentIdx === -1 || currentIdx === targetIndex) return s;
+          const next = [...s.fields];
+          const [moved] = next.splice(currentIdx, 1);
+          next.splice(targetIndex, 0, moved);
+          return { ...s, fields: next };
+        }),
+      }));
+    },
+    [updateState],
+  );
+
   const handleRemoveField = useCallback(
     (stepId: string, id: string) => {
       updateState((p) => ({
@@ -105,11 +129,59 @@ const App: React.FC = () => {
         id: newStepId(),
         title: `Step ${p.steps.length + 1}`,
         description: DEFAULT_DESCRIPTION,
+        kind: 'form',
         fields: [],
       };
       return { ...p, steps: [...p.steps, newStep] };
     });
   }, [updateState]);
+
+  const handleAddReviewStep = useCallback(() => {
+    let newIdx = 0;
+    updateState((p) => {
+      const newStep: Step = {
+        id: newStepId(),
+        title: REVIEW_DEFAULT_TITLE,
+        description: REVIEW_DEFAULT_DESCRIPTION,
+        reviewIntructionsHeading: REVIEW_DEFAULT_INSTRUCTIONS_HEADING,
+        reviewInstructions: REVIEW_DEFAULT_INSTRUCTIONS,
+        kind: 'review',
+        referenceNumber: '0000000000',
+        fields: [],
+      };
+      newIdx = p.steps.length;
+      return { ...p, steps: [...p.steps, newStep] };
+    });
+    setCurrentStep(newIdx);
+  }, [updateState]);
+
+  const handleSetStepKind = useCallback(
+    (stepId: string, kind: Step['kind']) => {
+      updateState((p) => ({
+        ...p,
+        steps: p.steps.map((s) => {
+          if (s.id !== stepId) return s;
+          if (s.kind === kind) return s;
+          if (kind === 'review') {
+            return {
+              ...s,
+              kind: 'review',
+              title: s.title.startsWith('Step ') ? REVIEW_DEFAULT_TITLE : s.title,
+              description:
+                s.description === DEFAULT_DESCRIPTION ? REVIEW_DEFAULT_DESCRIPTION : s.description,
+              referenceNumber: s.referenceNumber ?? '0000000000',
+              reviewIntructionsHeading:
+                s.reviewIntructionsHeading ?? REVIEW_DEFAULT_INSTRUCTIONS_HEADING,
+              reviewInstructions: s.reviewInstructions ?? REVIEW_DEFAULT_INSTRUCTIONS,
+              fields: [],
+            };
+          }
+          return { ...s, kind: 'form' };
+        }),
+      }));
+    },
+    [updateState],
+  );
 
   const handleRemoveStep = useCallback(
     (stepId: string) => {
@@ -137,7 +209,13 @@ const App: React.FC = () => {
         if (target > p.steps.length) {
           const extra: Step[] = [];
           for (let i = p.steps.length; i < target; i++) {
-            extra.push({ id: newStepId(), title: `Step ${i + 1}`, description: DEFAULT_DESCRIPTION, fields: [] });
+            extra.push({
+              id: newStepId(),
+              title: `Step ${i + 1}`,
+              description: DEFAULT_DESCRIPTION,
+              kind: 'form',
+              fields: [],
+            });
           }
           return { ...p, steps: [...p.steps, ...extra] };
         }
@@ -167,6 +245,33 @@ const App: React.FC = () => {
     [updateState],
   );
 
+  const changeStepReference = useCallback(
+    (stepId: string, v: string) =>
+      updateState((p) => ({
+        ...p,
+        steps: p.steps.map((s) => (s.id === stepId ? { ...s, referenceNumber: v } : s)),
+      })),
+    [updateState],
+  );
+
+  const changeReviewHeading = useCallback(
+    (stepId: string, v: string) =>
+      updateState((p) => ({
+        ...p,
+        steps: p.steps.map((s) => (s.id === stepId ? { ...s, reviewIntructionsHeading: v } : s)),
+      })),
+    [updateState],
+  );
+
+  const changeReviewInstructions = useCallback(
+    (stepId: string, v: string) =>
+      updateState((p) => ({
+        ...p,
+        steps: p.steps.map((s) => (s.id === stepId ? { ...s, reviewInstructions: v } : s)),
+      })),
+    [updateState],
+  );
+
   return (
     <div className={`app${selectedPaletteItem ? ' app--drawer-open' : ''}`}>
       <Sidebar
@@ -186,7 +291,11 @@ const App: React.FC = () => {
           onChangeContentHeader={(v) => updateState((p) => ({ ...p, contentHeader: v }))}
           onChangeStepTitle={changeStepTitle}
           onChangeStepDescription={changeStepDescription}
+          onChangeStepReference={changeStepReference}
+          onChangeReviewHeading={changeReviewHeading}
+          onChangeReviewInstructions={changeReviewInstructions}
           onDropField={handleDropField}
+          onReorderField={handleReorderField}
           onSelectField={selectField}
           onSelectStepper={selectStepper}
           onRemoveField={handleRemoveField}
@@ -205,8 +314,10 @@ const App: React.FC = () => {
         }}
         onChangeStepTitle={changeStepTitle}
         onAddStep={handleAddStep}
+        onAddReviewStep={handleAddReviewStep}
         onRemoveStep={handleRemoveStep}
         onSetStepCount={handleSetStepCount}
+        onSetStepKind={handleSetStepKind}
       />
       {exportOpen && <ExportDialog prototype={prototype} onClose={() => setExportOpen(false)} />}
     </div>
