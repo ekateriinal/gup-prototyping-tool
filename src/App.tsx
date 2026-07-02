@@ -3,6 +3,7 @@ import { Sidebar } from './components/Sidebar';
 import { Canvas } from './components/Canvas';
 import { Inspector } from './components/Inspector';
 import { ExportDialog } from './components/ExportDialog';
+import { HelpDialog } from './components/HelpDialog';
 import { VariantsDrawer } from './components/VariantsDrawer';
 import { openPreview } from './components/Preview';
 import { getPaletteItem, makeField } from './lib/componentRegistry';
@@ -34,6 +35,7 @@ const App: React.FC = () => {
   const [stepperSelected, setStepperSelected] = useState(false);
   const [selectedPaletteKind, setSelectedPaletteKind] = useState<FieldKind | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   const selectedField = useMemo(() => {
     if (!selectedFieldId) return null;
@@ -279,6 +281,7 @@ const App: React.FC = () => {
         onSelectKind={setSelectedPaletteKind}
         onPreview={() => openPreview(prototype)}
         onExport={() => setExportOpen(true)}
+        onHelp={() => setHelpOpen(true)}
       />
       <VariantsDrawer item={selectedPaletteItem} onClose={() => setSelectedPaletteKind(null)} />
       <main className="workspace">
@@ -320,6 +323,7 @@ const App: React.FC = () => {
         onSetStepKind={handleSetStepKind}
       />
       {exportOpen && <ExportDialog prototype={prototype} onClose={() => setExportOpen(false)} />}
+      {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
     </div>
   );
 };
