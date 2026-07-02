@@ -309,6 +309,48 @@ button {
   overflow-y: auto;
 }
 
+.review-step {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.review-step__reference {
+  font-size: 16px;
+  margin: 0;
+  color: var(--gup-color-content-primary, #27272a);
+}
+
+.review-step__title {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 40px;
+  letter-spacing: -0.56px;
+  color: var(--gup-color-content-primary, #27272a);
+  margin: 0;
+}
+
+.review-step__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-step__section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.review-step__section-title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--gup-color-content-primary, #27272a);
+  margin: 0;
+}
+
 .step-description {
   color: var(--gup-color-content-primary, #27272a);
   font-family: 'Readex Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -333,6 +375,18 @@ button {
 
 .stepper-area--selected {
   outline-color: var(--accent);
+}
+
+.inspector__step-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.inspector__check--indent {
+  padding-left: 30px;
 }
 
 .inspector__step-num {
@@ -433,6 +487,11 @@ button {
 
 .field-drop-target {
   position: relative;
+  cursor: grab;
+}
+
+.field-drop-target:active {
+  cursor: grabbing;
 }
 
 .drop-zone--dragging .field-drop-target {
@@ -440,6 +499,10 @@ button {
   outline-offset: 2px;
   border-radius: 6px;
   transition: outline-color 80ms ease, background 80ms ease;
+}
+
+.field-drop-target--dragging {
+  opacity: 0.35;
 }
 
 .field-wrap {
