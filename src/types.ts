@@ -66,10 +66,17 @@ export interface Field {
   appearance?: 'primary' | 'secondary' | 'text';
 }
 
+export type StepKind = 'form' | 'review';
+
 export interface Step {
   id: string;
   title: string;
   description: string;
+  kind: StepKind;
+  reviewIntructionsHeading?: string;
+  reviewInstructions?: string;
+  /** Only used when kind === 'review' */
+  referenceNumber?: string;
   fields: Field[];
 }
 
