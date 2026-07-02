@@ -7,12 +7,24 @@ interface Props {
   onSelectKind: (kind: FieldKind | null) => void;
   onPreview: () => void;
   onExport: () => void;
+  onHelp: () => void;
 }
 
-export const Sidebar: React.FC<Props> = ({ selectedKind, onSelectKind, onPreview, onExport }) => {
+export const Sidebar: React.FC<Props> = ({ selectedKind, onSelectKind, onPreview, onExport, onHelp }) => {
   return (
     <aside className="sidebar">
-      <div className="sidebar__brand">GUP Prototyper</div>
+      <div className="sidebar__brand">
+        <span>GUP Prototyper</span>
+        <button
+          type="button"
+          className="sidebar__help"
+          onClick={onHelp}
+          title="How to use this tool"
+          aria-label="Help"
+        >
+          ?
+        </button>
+      </div>
       <div className="sidebar__section-label">Form components</div>
       <ul className="palette">
         {PALETTE.map((item) => (
