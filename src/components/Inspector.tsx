@@ -9,8 +9,10 @@ interface Props {
   onClose: () => void;
   onChangeStepTitle: (stepId: string, v: string) => void;
   onAddStep: () => void;
+  onAddReviewStep: () => void;
   onRemoveStep: (stepId: string) => void;
   onSetStepCount: (n: number) => void;
+  onSetStepKind: (stepId: string, kind: Step['kind']) => void;
 }
 
 const INPUT_TYPES: InputType[] = ['text', 'numeric', 'number', 'email', 'tel', 'url', 'date', 'time', 'password'];
@@ -23,8 +25,10 @@ export const Inspector: React.FC<Props> = ({
   onClose,
   onChangeStepTitle,
   onAddStep,
+  onAddReviewStep,
   onRemoveStep,
   onSetStepCount,
+  onSetStepKind,
 }) => {
   if (stepperSelected) {
     return (
@@ -32,8 +36,10 @@ export const Inspector: React.FC<Props> = ({
         steps={steps}
         onChangeStepTitle={onChangeStepTitle}
         onAddStep={onAddStep}
+        onAddReviewStep={onAddReviewStep}
         onRemoveStep={onRemoveStep}
         onSetStepCount={onSetStepCount}
+        onSetStepKind={onSetStepKind}
         onClose={onClose}
       />
     );
@@ -195,8 +201,6 @@ export const Inspector: React.FC<Props> = ({
   );
 };
 
-/* ── small row primitives ──────────────────────────────────────────── */
-
 const TextRow: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
   <label className="inspector__field">
     <span>{label}</span>
@@ -286,16 +290,18 @@ const OptionsEditor: React.FC<{ field: Field; onChange: (patch: Partial<Field>) 
   </div>
 );
 
-/* ── Stepper editor ────────────────────────────────────────────────── */
-
 const StepperEditor: React.FC<{
   steps: Step[];
   onChangeStepTitle: (stepId: string, v: string) => void;
   onAddStep: () => void;
+  onAddReviewStep: () => void;
   onRemoveStep: (stepId: string) => void;
   onSetStepCount: (n: number) => void;
+  onSetStepKind: (stepId: string, kind: Step['kind']) => void;
   onClose: () => void;
-}> = ({ steps, onChangeStepTitle, onAddStep, onRemoveStep, onSetStepCount, onClose }) => (
+}> = ({ steps, onChangeStepTitle, onAddStep, onAddReviewStep, onRemoveStep, onSetStepCount, onSetStepKind, onClose }) => {
+  const hasReview = steps.some((s) => s.kind === 'review');
+  return (
   <aside className="inspector">
     <div className="inspector__header">
       <span>Stepper</span>
@@ -312,33 +318,53 @@ const StepperEditor: React.FC<{
       />
     </label>
     <div className="inspector__field">
-      <span>Step titles</span>
+      <span>Steps</span>
       {steps.map((s, i) => (
-        <div className="inspector__option-row" key={s.id}>
-          <span className="inspector__step-num">{i + 1}</span>
-          <input
-            type="text"
-            value={s.title}
-            onChange={(e) => onChangeStepTitle(s.id, e.target.value)}
-          />
-          <button
-            type="button"
-            onClick={() => onRemoveStep(s.id)}
-            disabled={steps.length <= 1}
-            title="Remove step"
-          >
-            ×
-          </button>
+        <div className="inspector__step-block" key={s.id}>
+          <div className="inspector__option-row">
+            <span className="inspector__step-num">{i + 1}</span>
+            <input
+              type="text"
+              value={s.title}
+              onChange={(e) => onChangeStepTitle(s.id, e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => onRemoveStep(s.id)}
+              disabled={steps.length <= 1}
+              title="Remove step"
+            >
+              ×
+            </button>
+          </div>
+          <label className="inspector__check inspector__check--indent">
+            <input
+              type="checkbox"
+              checked={s.kind === 'review'}
+              onChange={(e) => onSetStepKind(s.id, e.target.checked ? 'review' : 'form')}
+            />
+            <span>Review step (auto-summary of previous fields)</span>
+          </label>
         </div>
       ))}
-      <button type="button" className="inspector__add-option" onClick={onAddStep}>
-        + Add step
-      </button>
+      <div className="inspector__row2">
+        <button type="button" className="inspector__add-option" onClick={onAddStep}>
+          + Add step
+        </button>
+        <button
+          type="button"
+          className="inspector__add-option"
+          onClick={onAddReviewStep}
+          disabled={hasReview}
+          title={hasReview ? 'You already have a review step — only one allowed.' : 'Append a review step (Application Completed template)'}
+        >
+          + Add review step
+        </button>
+      </div>
     </div>
   </aside>
-);
-
-/* ── capability predicates ─────────────────────────────────────────── */
+  );
+};
 
 function hasPlaceholder(f: Field) {
   return f.kind === 'input-field' || f.kind === 'textarea' || f.kind === 'dropdown';
